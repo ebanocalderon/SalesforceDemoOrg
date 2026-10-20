@@ -37,7 +37,8 @@ jobs:
       - name: Detect changed metadata
         id: changed
         run: |
-          FILES=$(git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- force-app | tr '\n' ' ')
+          BASE="${{ github.event.pull_request.base.sha }}"
+          FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" HEAD -- force-app | tr '\n' ' ')
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
           if [ -n "$FILES" ]; then
             echo "Changed metadata: $FILES"
