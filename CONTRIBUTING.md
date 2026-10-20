@@ -60,15 +60,13 @@ Este repositorio contiene el metadata de la org `ebanoconsulting` (Developer Edi
 
 8. Merge a `main` (squash o merge commit; no force-push).
 
-9. Despliega al dev sandbox **desde `main`**, nunca desde una rama sin mergear:
+9. Al mergear el PR, GitHub Actions despliega automaticamente al dev sandbox (ver "Deploy automatico" abajo). Si necesitas desplegar manualmente, hazlo **desde `main`**, nunca desde una rama sin mergear:
 
    ```powershell
    git checkout main
    git pull origin main
    sf project deploy start --source-dir force-app --target-org ebanoconsulting
    ```
-
-   Cuando el CI este configurado, este paso lo ejecuta el workflow de GitHub Actions.
 
 10. Verifica en la org y comenta/actualiza el ticket de Jira.
 
@@ -80,6 +78,30 @@ Este repositorio contiene el metadata de la org `ebanoconsulting` (Developer Edi
 - [ ] Sin secretos (`Jira.txt`, `.env`, auth URLs, tokens)
 - [ ] Evidencia de pruebas (capturas, logs o pasos reproducibles)
 - [ ] Destructive changes documentadas y aprobadas (si aplica)
+
+## Deploy automatico (GitHub Actions)
+
+Workflow: `.github/workflows/deploy.yml`.
+
+1. Configura el secreto `SFDX_AUTH_URL` (una sola vez):
+
+   ```powershell
+   sf org display --target-org ebanoconsulting --verbose --json
+   ```
+
+   Copia el valor de `sfdxAuthUrl` (empieza con `force://`) y agregalo en GitHub: Settings -> Secrets and variables -> Actions -> New repository secret, con el nombre `SFDX_AUTH_URL`.
+
+2. En cada PR, el job `validate` ejecuta un `--dry-run` solo con los componentes modificados.
+
+3. Al mergear a `main` (push), el job `deploy` genera un manifest con los archivos cambiados y los despliega al dev sandbox.
+
+4. Ejecucion manual: Actions -> Salesforce Deploy -> Run workflow. Marca `full` para desplegar todo `force-app`.
+
+5. Limitaciones:
+
+   - Las eliminaciones de metadata no se automatizan (el diff excluye archivos borrados). Usa `destructiveChanges.xml` en un PR y despliega manualmente.
+   - Los PRs desde forks no reciben secretos; usa ramas dentro del repo.
+   - Para produccion cambia `--test-level NoTestRun` por `RunLocalTests`.
 
 ## Proteccion de `main` (configurar en GitHub)
 
