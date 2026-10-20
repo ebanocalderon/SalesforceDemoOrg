@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Type__c</fullName>
+    <description>Category of the initiative.</description>
+    <inlineHelpText>Category of the initiative.</inlineHelpText>
+    <label>Type</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Sign Language Interpreters</fullName>
+                <default>false</default>
+                <label>Sign Language Interpreters</label>
+            </value>
+            <value>
+                <fullName>Hearing Assistive Technology</fullName>
+                <default>false</default>
+                <label>Hearing Assistive Technology</label>
+            </value>
+            <value>
+                <fullName>Accessibility Training</fullName>
+                <default>false</default>
+                <label>Accessibility Training</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

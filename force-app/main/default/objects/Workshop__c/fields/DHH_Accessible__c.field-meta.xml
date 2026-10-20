@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>DHH_Accessible__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Indicates if the workshop is accessible for Deaf and Hard of Hearing participants.</description>
+    <inlineHelpText>Indicates if the workshop is accessible for Deaf and Hard of Hearing participants.</inlineHelpText>
+    <label>DHH Accessible</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

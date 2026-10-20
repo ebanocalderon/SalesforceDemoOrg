@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <description>Get details of the selected journey.</description>
+        <name>Get_Selected_Journey</name>
+        <label>Get Selected Journey</label>
+        <locationX>176</locationX>
+        <locationY>458</locationY>
+        <actionName>GetFirst</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Assign_Action_Result_to_Var</targetReference>
+        </connector>
+        <dataTypeMappings>
+            <typeName>T__inputCollection</typeName>
+            <typeValue>Wellness_Journey__c</typeValue>
+        </dataTypeMappings>
+        <dataTypeMappings>
+            <typeName>U__outputMember</typeName>
+            <typeValue>Wellness_Journey__c</typeValue>
+        </dataTypeMappings>
+        <flowTransactionModel>Automatic</flowTransactionModel>
+        <inputParameters>
+            <name>inputCollection</name>
+            <value>
+                <elementReference>Filter_Selected_Journey</elementReference>
+            </value>
+        </inputParameters>
+        <nameSegment>GetFirst</nameSegment>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </actionCalls>
+    <apiVersion>60.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <description>Variable to store the result of the Get Selected Journey action.</description>
+        <name>Assign_Action_Result_to_Var</name>
+        <label>Assign Action Result to Var</label>
+        <locationX>176</locationX>
+        <locationY>566</locationY>
+        <assignmentItems>
+            <assignToReference>varSelectedJourneyRecord</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>Get_Selected_Journey.outputMember</elementReference>
+            </value>
+        </assignmentItems>
+        <connector>
+            <targetReference>Journey_Details</targetReference>
+        </connector>
+    </assignments>
+    <collectionProcessors>
+        <description>Filter Journeys by the selected name.</description>
+        <name>Filter_Selected_Journey</name>
+        <elementSubtype>FilterCollectionProcessor</elementSubtype>
+        <label>Filter Selected Journey</label>
+        <locationX>176</locationX>
+        <locationY>350</locationY>
+        <assignNextValueToReference>currentItem_Filter_Selected_Journey</assignNextValueToReference>
+        <collectionProcessorType>FilterCollectionProcessor</collectionProcessorType>
+        <collectionReference>Get_Wellness_Journey</collectionReference>
+        <conditionLogic>and</conditionLogic>
+        <conditions>
+            <leftValueReference>currentItem_Filter_Selected_Journey.Name</leftValueReference>
+            <operator>EqualTo</operator>
+            <rightValue>
+                <elementReference>Select_Completed_Journey</elementReference>
+            </rightValue>
+        </conditions>
+        <connector>
+            <targetReference>Get_Selected_Journey</targetReference>
+        </connector>
+    </collectionProcessors>
+    <description>Flow that allows users to update their current wellness journey and receive update on progress towards completion.</description>
+    <dynamicChoiceSets>
+        <description>Choice Set of In Progress journeys</description>
+        <name>collectionChoice_Get_Wellness_Journey</name>
+        <collectionReference>Get_Wellness_Journey</collectionReference>
+        <dataType>String</dataType>
+        <displayField>Name</displayField>
+        <object>Wellness_Journey__c</object>
+        <valueField>Name</valueField>
+    </dynamicChoiceSets>
+    <environments>Default</environments>
+    <interviewLabel>Wellness Journey Touchpoint {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Wellness Journey Touchpoint</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <recordLookups>
+        <description>Pulls records of users current wellness journey.</description>
+        <name>Get_Wellness_Journey</name>
+        <label>Get Wellness Journey</label>
+        <locationX>176</locationX>
+        <locationY>134</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Wellness_Journey_Touchpoint</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Status__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <stringValue>In Progress</stringValue>
+            </value>
+        </filters>
+        <filters>
+            <field>OwnerId</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>$User.Id</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
+        <object>Wellness_Journey__c</object>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <recordUpdates>
+        <description>Update the journey record</description>
+        <name>Update_Journey_Record</name>
+        <label>Update Journey Record</label>
+        <locationX>176</locationX>
+        <locationY>782</locationY>
+        <connector>
+            <targetReference>Success_Message</targetReference>
+        </connector>
+        <inputReference>varSelectedJourneyRecord</inputReference>
+    </recordUpdates>
+    <screens>
+        <description>Display the journey details</description>
+        <name>Journey_Details</name>
+        <label>Journey Details</label>
+        <locationX>176</locationX>
+        <locationY>674</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>Update_Journey_Record</targetReference>
+        </connector>
+        <fields>
+            <name>Selected_Journey_Details</name>
+            <fieldText>&lt;p&gt;Journey Name : {!varSelectedJourneyRecord.Name}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Type : {!varSelectedJourneyRecord.Type__c}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Points : {!varSelectedJourneyRecord.Points__c}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Metric Type : {!varSelectedJourneyRecord.Metric_Type__c}&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Completion Target : {!varSelectedJourneyRecord.Completion_Goal__c}&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Completion_Value</name>
+            <dataType>Number</dataType>
+            <defaultValue>
+                <numberValue>0.0</numberValue>
+            </defaultValue>
+            <fieldText>Completion Value</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>false</isRequired>
+            <scale>0</scale>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Completed</name>
+            <dataType>Boolean</dataType>
+            <defaultValue>
+                <booleanValue>true</booleanValue>
+            </defaultValue>
+            <fieldText>Completed</fieldText>
+            <fieldType>InputField</fieldType>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <description>Display successful message.</description>
+        <name>Success_Message</name>
+        <label>Success Message</label>
+        <locationX>176</locationX>
+        <locationY>890</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <fields>
+            <name>Points_Message</name>
+            <fieldText>&lt;p&gt;&lt;span style=&quot;color: rgb(68, 68, 68); background-color: rgb(255, 255, 255);&quot;&gt;Points Earned : &lt;/span&gt;&lt;strong style=&quot;color: rgb(68, 68, 68); background-color: rgb(255, 255, 255);&quot;&gt;{!varSelectedJourneyRecord.Points_Earned__c}&lt;/strong&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <fields>
+            <name>Message</name>
+            <fieldText>&lt;p&gt;&lt;strong style=&quot;color: rgb(68, 68, 68); background-color: rgb(255, 255, 255);&quot;&gt;{!varSelectedJourneyRecord.Name} &lt;/strong&gt;&lt;span style=&quot;color: rgb(68, 68, 68); background-color: rgb(255, 255, 255);&quot;&gt;is now Complete.&lt;/span&gt;&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <screens>
+        <description>Select one of the In Progress Journeys</description>
+        <name>Wellness_Journey_Touchpoint</name>
+        <label>Wellness Journey Touchpoint</label>
+        <locationX>176</locationX>
+        <locationY>242</locationY>
+        <allowBack>true</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>true</allowPause>
+        <connector>
+            <targetReference>Filter_Selected_Journey</targetReference>
+        </connector>
+        <fields>
+            <name>Select_Completed_Journey</name>
+            <choiceReferences>collectionChoice_Get_Wellness_Journey</choiceReferences>
+            <dataType>String</dataType>
+            <fieldText>Select Completed Journey</fieldText>
+            <fieldType>RadioButtons</fieldType>
+            <helpText>&lt;p&gt;Select one of the In-progress journeys. &lt;/p&gt;</helpText>
+            <inputsOnNextNavToAssocScrn>UseStoredValues</inputsOnNextNavToAssocScrn>
+            <isRequired>true</isRequired>
+            <styleProperties>
+                <verticalAlignment>
+                    <stringValue>top</stringValue>
+                </verticalAlignment>
+                <width>
+                    <stringValue>12</stringValue>
+                </width>
+            </styleProperties>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Wellness_Journey</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>currentItem_Filter_Selected_Journey</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Wellness_Journey__c</objectType>
+    </variables>
+    <variables>
+        <description>Variable to store the result of the Get Selected Journey action.</description>
+        <name>varSelectedJourneyRecord</name>
+        <dataType>SObject</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>false</isOutput>
+        <objectType>Wellness_Journey__c</objectType>
+    </variables>
+</Flow>

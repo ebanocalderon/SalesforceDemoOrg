@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomFieldTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <help><!-- Set the date when the status is set Complete. --></help>
+    <label><!-- Completion Date --></label>
+    <name>Completion_Date__c</name>
+</CustomFieldTranslation>

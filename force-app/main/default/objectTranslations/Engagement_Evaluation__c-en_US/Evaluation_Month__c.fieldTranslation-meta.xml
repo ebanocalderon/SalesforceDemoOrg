@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomFieldTranslation xmlns="http://soap.sforce.com/2006/04/metadata">
+    <help><!-- The specific month for which the engagement was evaluated. --></help>
+    <label><!-- Evaluation Month --></label>
+    <name>Evaluation_Month__c</name>
+</CustomFieldTranslation>

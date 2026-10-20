@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recommendation__c</fullName>
+    <description>Stores recommendations to improve or maintain the engagement level.</description>
+    <inlineHelpText>Stores recommendations to improve or maintain the engagement level.</inlineHelpText>
+    <label>Recommendation</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>TextArea</type>
+</CustomField>
