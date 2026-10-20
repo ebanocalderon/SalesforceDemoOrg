@@ -64,7 +64,8 @@ jobs:
             echo "::error::Missing SFDX_AUTH_URL repository secret."
             exit 1
           fi
-          echo "$SFDX_AUTH_URL" | sf org login sfdx-url --sfdx-url-stdin --alias "$ORG_ALIAS" --set-default
+          printf '%s' "$SFDX_AUTH_URL" > "$RUNNER_TEMP/sfdx-auth-url"
+          sf org login sfdx-url --sfdx-url-file "$RUNNER_TEMP/sfdx-auth-url" --alias "$ORG_ALIAS" --set-default
 
       - name: Validate deploy (dry run)
         if: steps.changed.outputs.files != ''
@@ -127,7 +128,8 @@ jobs:
             echo "::error::Missing SFDX_AUTH_URL repository secret."
             exit 1
           fi
-          echo "$SFDX_AUTH_URL" | sf org login sfdx-url --sfdx-url-stdin --alias "$ORG_ALIAS" --set-default
+          printf '%s' "$SFDX_AUTH_URL" > "$RUNNER_TEMP/sfdx-auth-url"
+          sf org login sfdx-url --sfdx-url-file "$RUNNER_TEMP/sfdx-auth-url" --alias "$ORG_ALIAS" --set-default
 
       - name: Deploy to dev sandbox
         if: steps.changed.outputs.files != ''
