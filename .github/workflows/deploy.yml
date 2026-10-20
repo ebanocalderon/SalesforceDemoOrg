@@ -1,0 +1,145 @@
+name: Salesforce Deploy
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - "force-app/**"
+      - "manifest/**"
+      - "sfdx-project.json"
+  workflow_dispatch:
+    inputs:
+      full:
+        description: "Deploy all metadata in force-app instead of only the last changes"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  ORG_ALIAS: ebanoconsulting
+  SF_API_VERSION: "68.0"
+  SF_DISABLE_TELEMETRY: "true"
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed metadata
+        id: changed
+        run: |
+          FILES=$(git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- force-app | tr '\n' ' ')
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+          if [ -n "$FILES" ]; then
+            echo "Changed metadata: $FILES"
+          else
+            echo "No metadata changes."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.files != ''
+        with:
+          node-version: 22
+
+      - name: Install Salesforce CLI
+        if: steps.changed.outputs.files != ''
+        run: npm install --global @salesforce/cli
+
+      - name: Authenticate to org
+        if: steps.changed.outputs.files != ''
+        env:
+          SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL }}
+        run: |
+          if [ -z "$SFDX_AUTH_URL" ]; then
+            echo "::error::Missing SFDX_AUTH_URL repository secret."
+            exit 1
+          fi
+          echo "$SFDX_AUTH_URL" | sf org login sfdx-url --sfdx-url-stdin --alias "$ORG_ALIAS" --set-default
+
+      - name: Validate deploy (dry run)
+        if: steps.changed.outputs.files != ''
+        run: |
+          sf project generate manifest --source-dir ${{ steps.changed.outputs.files }} --name package.xml --output-dir "$RUNNER_TEMP/manifest"
+          sf project deploy start \
+            --manifest "$RUNNER_TEMP/manifest/package.xml" \
+            --target-org "$ORG_ALIAS" \
+            --api-version "$SF_API_VERSION" \
+            --test-level NoTestRun \
+            --dry-run \
+            --wait 30
+
+  deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: salesforce-deploy-main
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed metadata
+        id: changed
+        run: |
+          if [ "${{ inputs.full }}" = "true" ]; then
+            FILES="force-app"
+          else
+            BASE="${{ github.event.before }}"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+              BASE="HEAD~1"
+            fi
+            FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" "${{ github.sha }}" -- force-app | tr '\n' ' ')
+          fi
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+          if [ -n "$FILES" ]; then
+            echo "Changed metadata: $FILES"
+          else
+            echo "No metadata changes."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.changed.outputs.files != ''
+        with:
+          node-version: 22
+
+      - name: Install Salesforce CLI
+        if: steps.changed.outputs.files != ''
+        run: npm install --global @salesforce/cli
+
+      - name: Authenticate to org
+        if: steps.changed.outputs.files != ''
+        env:
+          SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL }}
+        run: |
+          if [ -z "$SFDX_AUTH_URL" ]; then
+            echo "::error::Missing SFDX_AUTH_URL repository secret."
+            exit 1
+          fi
+          echo "$SFDX_AUTH_URL" | sf org login sfdx-url --sfdx-url-stdin --alias "$ORG_ALIAS" --set-default
+
+      - name: Deploy to dev sandbox
+        if: steps.changed.outputs.files != ''
+        run: |
+          sf project generate manifest --source-dir ${{ steps.changed.outputs.files }} --name package.xml --output-dir "$RUNNER_TEMP/manifest"
+          sf project deploy start \
+            --manifest "$RUNNER_TEMP/manifest/package.xml" \
+            --target-org "$ORG_ALIAS" \
+            --api-version "$SF_API_VERSION" \
+            --test-level NoTestRun \
+            --wait 30
+          echo "Deploy completed for: ${{ steps.changed.outputs.files }}" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Nothing to deploy
+        if: steps.changed.outputs.files == ''
+        run: echo "No metadata changes to deploy."
