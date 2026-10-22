@@ -104,7 +104,7 @@ jobs:
             FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" "${{ github.sha }}" -- force-app | tr '\n' ' ')
           fi
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
-          if echo "$FILES" | grep -qE '\.(cls|trigger)$'; then
+          if echo "$FILES" | tr ' ' '\n' | grep -qE '\.(cls|trigger)$'; then
             echo "has_apex=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_apex=false" >> "$GITHUB_OUTPUT"
