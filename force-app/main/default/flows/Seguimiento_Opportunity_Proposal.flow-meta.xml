@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Flow xmlns="http://soap.sforce.com/2006/04/metadata">
     <apiVersion>68.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <formulas>
         <name>Due_Date</name>
         <dataType>Date</dataType>
@@ -41,6 +42,7 @@
         <object>Task</object>
     </recordCreates>
     <start>
+        <doesRequireRecordChangedToMeetCriteria>true</doesRequireRecordChangedToMeetCriteria>
         <locationX>176</locationX>
         <locationY>0</locationY>
         <connector>
@@ -53,10 +55,6 @@
             <value>
                 <stringValue>Proposal/Price Quote</stringValue>
             </value>
-        </filters>
-        <filters>
-            <field>StageName</field>
-            <operator>IsChanged</operator>
         </filters>
         <filters>
             <field>IsClosed</field>
