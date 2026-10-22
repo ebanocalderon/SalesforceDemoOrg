@@ -8,7 +8,8 @@ private class LeadScoringTriggerTest {
         insert leadRecord;
         Test.stopTest();
 
-        System.assertEquals(10, leadRecord.Initial_Score__c.intValue(), 'Base score should be 10');
+        Lead inserted = [SELECT Initial_Score__c FROM Lead WHERE Id = :leadRecord.Id];
+        System.assertEquals(10, inserted.Initial_Score__c.intValue(), 'Base score should be 10');
     }
 
     @isTest
@@ -26,9 +27,10 @@ private class LeadScoringTriggerTest {
         insert leadRecord;
         Test.stopTest();
 
+        Lead inserted = [SELECT Initial_Score__c FROM Lead WHERE Id = :leadRecord.Id];
         System.assertEquals(
             85,
-            leadRecord.Initial_Score__c.intValue(),
+            inserted.Initial_Score__c.intValue(),
             'Web + Technology + 150 employees should score 85'
         );
     }
@@ -49,9 +51,10 @@ private class LeadScoringTriggerTest {
         insert leadRecord;
         Test.stopTest();
 
+        Lead inserted = [SELECT Initial_Score__c FROM Lead WHERE Id = :leadRecord.Id];
         System.assertEquals(
             100,
-            leadRecord.Initial_Score__c.intValue(),
+            inserted.Initial_Score__c.intValue(),
             'Score should be capped at 100'
         );
     }
@@ -74,8 +77,10 @@ private class LeadScoringTriggerTest {
         insert leads;
         Test.stopTest();
 
-        System.assertEquals(200, leads.size(), 'All 200 leads should be inserted');
-        for (Lead leadRecord : leads) {
+        Set<Id> leadIds = new Map<Id, Lead>(leads).keySet();
+        List<Lead> inserted = [SELECT Initial_Score__c FROM Lead WHERE Id IN :leadIds];
+        System.assertEquals(200, inserted.size(), 'All 200 leads should be inserted');
+        for (Lead leadRecord : inserted) {
             System.assertEquals(35, leadRecord.Initial_Score__c.intValue(), 'Web leads should score 35');
         }
     }
@@ -85,12 +90,16 @@ private class LeadScoringTriggerTest {
         Lead leadRecord = new Lead(FirstName = 'Test', LastName = 'Update', Company = 'Update Co');
         insert leadRecord;
 
+        leadRecord = [SELECT Id, Initial_Score__c FROM Lead WHERE Id = :leadRecord.Id];
+        System.assertEquals(10, leadRecord.Initial_Score__c.intValue(), 'Insert should score 10');
+
         leadRecord.Initial_Score__c = 5;
 
         Test.startTest();
         update leadRecord;
         Test.stopTest();
 
-        System.assertEquals(5, leadRecord.Initial_Score__c.intValue(), 'Trigger should not run on update');
+        Lead updated = [SELECT Initial_Score__c FROM Lead WHERE Id = :leadRecord.Id];
+        System.assertEquals(5, updated.Initial_Score__c.intValue(), 'Trigger should not run on update');
     }
 }
