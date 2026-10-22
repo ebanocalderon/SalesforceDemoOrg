@@ -101,7 +101,8 @@ Workflow: `.github/workflows/deploy.yml`.
 
    - Las eliminaciones de metadata no se automatizan (el diff excluye archivos borrados). Usa `destructiveChanges.xml` en un PR y despliega manualmente.
    - Los PRs desde forks no reciben secretos; usa ramas dentro del repo.
-   - Para produccion cambia `--test-level NoTestRun` por `RunLocalTests`.
+   - Si el merge incluye Apex (`.cls`/`.trigger`), el deploy ejecuta tests: `RunSpecifiedTests` con las clases `*Test` del diff; si no hay ninguna, `RunLocalTests`. Sin Apex, usa `NoTestRun`.
+   - La validacion del PR es un `--dry-run` sin tests: los campos nuevos todavia no existen en el schema de validacion.
 
 ## Proteccion de `main` (configurar en GitHub)
 

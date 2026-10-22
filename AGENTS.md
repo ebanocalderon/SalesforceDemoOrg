@@ -54,7 +54,7 @@ If a tool is not on `PATH`, locate the existing installation. Do not install glo
 
 Important caveats:
 
-- CI validates and deploys only the **changed** metadata and uses `--test-level NoTestRun`. Apex test failures do not block the pipeline, so run relevant Apex tests locally when touching Apex.
+- CI validates and deploys only the **changed** metadata. PR validation uses `--test-level NoTestRun` (new fields are not visible in the validation schema). On deploy from `main`, if the diff includes Apex (`.cls`/`.trigger`), tests run: `RunSpecifiedTests` for `*Test` classes in the diff, otherwise `RunLocalTests`. If no Apex changed, it uses `NoTestRun`. A deploy fails if the selected tests fail.
 - CI excludes deleted files from the diff. Metadata deletions always require a manual, approved `destructiveChanges.xml` deploy.
 - The pre-commit hook (`.husky/pre-commit` -> `lint-staged`) formats staged files, lints Aura/LWC JS, and runs related LWC Jest tests when applicable.
 - Scratch-org configuration exists in `config/project-scratch-def.json`, but the current workflow targets the Developer Edition org. Do not create scratch orgs unless asked.

@@ -104,6 +104,14 @@ jobs:
             FILES=$(git diff --name-only --diff-filter=ACMR "$BASE" "${{ github.sha }}" -- force-app | tr '\n' ' ')
           fi
           echo "files=$FILES" >> "$GITHUB_OUTPUT"
+          if echo "$FILES" | grep -qE '\.(cls|trigger)$'; then
+            echo "has_apex=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_apex=false" >> "$GITHUB_OUTPUT"
+          fi
+          TESTS=$(echo "$FILES" | tr ' ' '\n' | grep -E 'classes/[^/]+Test\.cls$' || true)
+          TESTS=$(echo "$TESTS" | sed 's#.*/##; s/\.cls$//' | paste -sd, -)
+          echo "tests=$TESTS" >> "$GITHUB_OUTPUT"
           if [ -n "$FILES" ]; then
             echo "Changed metadata: $FILES"
           else
@@ -135,11 +143,19 @@ jobs:
         if: steps.changed.outputs.files != ''
         run: |
           sf project generate manifest --source-dir ${{ steps.changed.outputs.files }} --name package.xml --output-dir "$RUNNER_TEMP/manifest"
+          TEST_ARGS=(--test-level NoTestRun)
+          if [ "${{ steps.changed.outputs.has_apex }}" = "true" ]; then
+            if [ -n "${{ steps.changed.outputs.tests }}" ]; then
+              TEST_ARGS=(--test-level RunSpecifiedTests --tests "${{ steps.changed.outputs.tests }}")
+            else
+              TEST_ARGS=(--test-level RunLocalTests)
+            fi
+          fi
           sf project deploy start \
             --manifest "$RUNNER_TEMP/manifest/package.xml" \
             --target-org "$ORG_ALIAS" \
             --api-version "$SF_API_VERSION" \
-            --test-level NoTestRun \
+            "${TEST_ARGS[@]}" \
             --wait 30
           echo "Deploy completed for: ${{ steps.changed.outputs.files }}" >> "$GITHUB_STEP_SUMMARY"
 
